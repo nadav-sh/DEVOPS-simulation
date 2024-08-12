@@ -1,0 +1,12 @@
+Step 1:
+Install GitLab Runner on the Bastion host.
+
+Step 2:
+Register the runner using the command:
+gitlab-runner register
+
+Step 3:
+Build the Docker image within GitLab and push it to Amazon ECR.
+
+Step 4:
+Connect to the target EC2 instance through SSH proxy via the Bastion host and deploy the Docker image.

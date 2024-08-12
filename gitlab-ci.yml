@@ -1,0 +1,21 @@
+stages:
+  - build
+  - deploy
+
+build:
+  stage: build
+  script:
+    - echo "Building the application..."
+    - docker build -t nginx-app .
+    - docer push <ecr_aws>/nginx-app:latest
+    
+deploy:
+  stage: deploy
+  script:
+    - echo "Deploying to EC2..."
+    - ssh -o StrictHostKeyChecking=no ec2-user@your-ec2-private-ip -i /path/to/your/private/key.pem << EOF
+      sudo docker pull <ecr_aws>/nginx-app:latest
+      sudo docker stop nginx-server || true
+      sudo docker rm nginx-server || true
+      sudo docker run -d --name nginx-server -p 80:80 -v /mnt/data:/usr/share/nginx/html your-dockerhub-username/nginx-app:latest
+      EOF
