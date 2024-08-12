@@ -1,0 +1,48 @@
+pipeline {
+    agent any
+
+    environment {
+        S3_BUCKET = 'nadav-ec2-bucket'
+        S3_FILE = 'index.html'
+        MOUNT_DIR = '/mnt/data'
+    }
+
+    stages {
+        stage('Pull Docker Image') {
+            steps {
+                script {
+                    sh 'docker pull nginx'
+                }
+            }
+        }
+
+        stage('Copy File from S3') {
+            steps {
+                script {
+                    sh "aws s3 cp s3://${S3_BUCKET}/${S3_FILE} ${MOUNT_DIR}/"
+                }
+            }
+        }
+
+        stage('Run Nginx Container') {
+            steps {
+                script {
+                    sh """
+                    docker run -d --name nginx-server \\
+                        -p 80:80 \\
+                        -v ${MOUNT_DIR}:/usr/share/nginx/html \\
+                        nginx
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                sh 'docker ps -a'
+            }
+        }
+    }
+}
